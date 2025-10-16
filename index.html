@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GitHub User Info</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      padding: 2rem;
+    }
+    .result {
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="mb-4">GitHub User Account Creation Date</h1>
+    <form id="github-user-d3f4g" class="row g-3">
+      <div class="col-md-8">
+        <input type="text" class="form-control" id="username" placeholder="Enter GitHub username" required />
+      </div>
+      <div class="col-md-4">
+        <button type="submit" class="btn btn-primary w-100">Fetch Info</button>
+      </div>
+    </form>
+    <div class="result" id="github-created-at"></div>
+  </div>
+  <script>
+    document.getElementById('github-user-d3f4g').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const tokenParam = new URLSearchParams(window.location.search).get('token');
+      const headers = {};
+      if (tokenParam) {
+        headers['Authorization'] = 'token ' + tokenParam;
+      }
+      const url = `https://api.github.com/users/${encodeURIComponent(username)}`;
+      const resultDiv = document.getElementById('github-created-at');
+      resultDiv.textContent = '';
+      try {
+        const response = await fetch(url, { headers });
+        if (!response.ok) {
+          throw new Error(`Error fetching data: ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+        if (data && data.created_at) {
+          const createdAt = new Date(data.created_at);
+          const formattedDate = createdAt.toISOString().slice(0, 10);
+          resultDiv.innerHTML = `<strong>Account Created At (UTC):</strong> ${formattedDate}`;
+        } else {
+          resultDiv.textContent = 'Could not retrieve creation date.';
+        }
+      } catch (error) {
+        resultDiv.textContent = error.message;
+      }
+    });
+  </script>
+</body>
+</html>
